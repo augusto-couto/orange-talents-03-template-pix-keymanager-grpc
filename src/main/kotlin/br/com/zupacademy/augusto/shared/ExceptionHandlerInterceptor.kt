@@ -1,7 +1,7 @@
 package br.com.zupacademy.augusto.shared
 
 import br.com.zupacademy.augusto.pix.PixAlreadyExistsException
-import br.com.zupacademy.augusto.pix.PixManagerService
+import br.com.zupacademy.augusto.pix.PixManagerEndpoint
 import com.google.rpc.BadRequest
 import com.google.rpc.Code
 import io.grpc.Status
@@ -17,11 +17,11 @@ import javax.validation.ConstraintViolationException
 
 @Singleton
 @InterceptorBean(ErrorHandler::class) // supported from Micronaut 2.4 onwards (https://docs.micronaut.io/2.4.0/guide/index.html#aop)
-class ExceptionHandlerInterceptor : MethodInterceptor<PixManagerService, Any?> { // or BindableService
+class ExceptionHandlerInterceptor : MethodInterceptor<PixManagerEndpoint, Any?> { // or BindableService
 
     private val LOGGER = LoggerFactory.getLogger(this.javaClass)
 
-    override fun intercept(context: MethodInvocationContext<PixManagerService, Any?>): Any? {
+    override fun intercept(context: MethodInvocationContext<PixManagerEndpoint, Any?>): Any? {
         try {
             return context.proceed()
         } catch (e: Exception) {

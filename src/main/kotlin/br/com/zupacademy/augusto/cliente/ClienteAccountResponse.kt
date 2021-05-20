@@ -1,7 +1,7 @@
 package br.com.zupacademy.augusto.cliente
 
-import br.com.zupacademy.augusto.TipoConta
 import br.com.zupacademy.augusto.instituicao.InstituicaoContaResponse
+import br.com.zupacademy.augusto.pix.TipoConta
 
 data class ClienteAccountResponse(
     val tipo: TipoConta,

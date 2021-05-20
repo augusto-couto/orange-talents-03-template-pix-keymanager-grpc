@@ -10,6 +10,6 @@ import io.micronaut.http.client.annotation.Client
 @Client("http://localhost:9091/api/v1/clientes")
 interface ClienteClient {
 
-    @Get("/{clienteId}/contas")
-    fun consulta(@PathVariable clienteId: String, @QueryValue tipo: String): HttpResponse<ClienteAccountResponse>
+    @Get("/{clienteId}/contas{?tipo}")
+    fun consulta(@PathVariable clienteId: String, @QueryValue tipo: String): HttpResponse<ClienteAccountResponse>?
 }

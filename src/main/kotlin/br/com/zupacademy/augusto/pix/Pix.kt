@@ -1,7 +1,6 @@
 package br.com.zupacademy.augusto.pix
 
-import br.com.zupacademy.augusto.TipoChave
-import br.com.zupacademy.augusto.TipoConta
+import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -14,13 +13,16 @@ import javax.validation.constraints.Size
 class Pix(
     @field:NotBlank
     @field:Size(max = 77)
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     val chave: String,
-    @field:NotNull
+    @field:NotBlank
+    @Column(nullable = false)
     val clienteId: String,
-    @field:NotBlank
+    @field:NotNull
+    @Column(nullable = false)
     val tipoChave: TipoChave,
-    @field:NotBlank
+    @field:NotNull
+    @Column(nullable = false)
     val tipoConta: TipoConta
 ) {
     @Id

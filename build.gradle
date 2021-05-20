@@ -34,12 +34,13 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.micronaut:micronaut-validation")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
-    testImplementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("org.hibernate:hibernate-validator:6.1.6.Final")
-
+    testImplementation("com.h2database:h2")
+    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("org.mockito:mockito-junit-jupiter:2.22.0")
 }
 
 application {

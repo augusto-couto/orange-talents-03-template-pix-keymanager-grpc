@@ -1,7 +1,9 @@
 package br.com.zupacademy.augusto.cliente
 
+import java.util.*
+
 data class ClienteTitularResponse(
-    val id: String,
+    val id: UUID,
     val nome: String,
     val cpf: String,
 )
