@@ -7,8 +7,22 @@ option objc_class_prefix = "HLW";
 
 package br.com.zupacademy.augusto;
 
-service KeymanagerGrpcService {
+service KeymanagerCadastraGrpcService {
   rpc cadastra (NewPixRequest) returns (NewPixResponse) {}
+}
+
+service KeymanagerDeletaGrpcService {
+  rpc deleta (DeletePixRequest) returns (DeletePixResponse) {}
+}
+
+message DeletePixRequest {
+  int64 idPix = 1;
+  string idCliente = 2;
+}
+
+message DeletePixResponse {
+  int64 idPix = 1;
+  string idCliente = 2;
 }
 
 enum TipoChave {

@@ -1,5 +1,5 @@
 package br.com.zupacademy.augusto.pix
 
 enum class TipoConta{
-    CONTA_CORRENTE, CONTA_POUPANCA
+    TIPO_CONTA_UNSPECIFIED, CONTA_CORRENTE, CONTA_POUPANCA
 }

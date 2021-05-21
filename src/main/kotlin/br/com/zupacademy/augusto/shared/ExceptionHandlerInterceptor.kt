@@ -1,7 +1,8 @@
 package br.com.zupacademy.augusto.shared
 
+import br.com.zupacademy.augusto.pix.NotOwnerPixException
 import br.com.zupacademy.augusto.pix.PixAlreadyExistsException
-import br.com.zupacademy.augusto.pix.PixManagerEndpoint
+import br.com.zupacademy.augusto.pix.registra.RegistraPixEndpoint
 import com.google.rpc.BadRequest
 import com.google.rpc.Code
 import io.grpc.Status
@@ -12,16 +13,17 @@ import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import org.slf4j.LoggerFactory
+import java.io.FileNotFoundException
 import javax.inject.Singleton
 import javax.validation.ConstraintViolationException
 
 @Singleton
 @InterceptorBean(ErrorHandler::class) // supported from Micronaut 2.4 onwards (https://docs.micronaut.io/2.4.0/guide/index.html#aop)
-class ExceptionHandlerInterceptor : MethodInterceptor<PixManagerEndpoint, Any?> { // or BindableService
+class ExceptionHandlerInterceptor : MethodInterceptor<RegistraPixEndpoint, Any?> { // or BindableService
 
     private val LOGGER = LoggerFactory.getLogger(this.javaClass)
 
-    override fun intercept(context: MethodInvocationContext<PixManagerEndpoint, Any?>): Any? {
+    override fun intercept(context: MethodInvocationContext<RegistraPixEndpoint, Any?>): Any? {
         try {
             return context.proceed()
         } catch (e: Exception) {
@@ -38,6 +40,8 @@ class ExceptionHandlerInterceptor : MethodInterceptor<PixManagerEndpoint, Any?> 
             val statusError = when (e) {
                 is IllegalArgumentException -> Status.INVALID_ARGUMENT.withDescription(e.message).asRuntimeException()
                 is IllegalStateException -> Status.FAILED_PRECONDITION.withDescription(e.message).asRuntimeException()
+                is FileNotFoundException -> Status.NOT_FOUND.withDescription(e.message).asRuntimeException()
+                is NotOwnerPixException -> Status.PERMISSION_DENIED.withDescription(e.message).asRuntimeException()
                 is ConstraintViolationException -> handleConstraintValidationException(e)
                 is PixAlreadyExistsException -> Status.ALREADY_EXISTS.withDescription(e.message).asRuntimeException()
                 else -> Status.UNKNOWN.withDescription("unexpected error happened").asRuntimeException()

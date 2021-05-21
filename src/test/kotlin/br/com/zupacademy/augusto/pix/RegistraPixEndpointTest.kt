@@ -1,6 +1,6 @@
 package br.com.zupacademy.augusto.pix
 
-import br.com.zupacademy.augusto.KeymanagerGrpcServiceGrpc
+import br.com.zupacademy.augusto.KeymanagerCadastraGrpcServiceGrpc
 import br.com.zupacademy.augusto.NewPixRequest
 import br.com.zupacademy.augusto.TipoChave
 import br.com.zupacademy.augusto.TipoConta
@@ -29,9 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
-internal class PixManagerEndpointTest(
+internal class RegistraPixEndpointTest(
     val pixRepository: PixRepository,
-    val pixManager: KeymanagerGrpcServiceGrpc.KeymanagerGrpcServiceBlockingStub
+    val pixManager: KeymanagerCadastraGrpcServiceGrpc.KeymanagerCadastraGrpcServiceBlockingStub
 ) {
 
     @Inject
@@ -281,8 +281,8 @@ internal class PixManagerEndpointTest(
     @Factory
     class Clients {
         @Singleton
-        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerGrpcServiceGrpc.KeymanagerGrpcServiceBlockingStub {
-            return KeymanagerGrpcServiceGrpc.newBlockingStub(channel)
+        fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerCadastraGrpcServiceGrpc.KeymanagerCadastraGrpcServiceBlockingStub {
+            return KeymanagerCadastraGrpcServiceGrpc.newBlockingStub(channel)
         }
     }
 

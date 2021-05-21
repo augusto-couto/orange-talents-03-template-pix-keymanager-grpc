@@ -28,4 +28,6 @@ class Pix(
     @Id
     @GeneratedValue
     val id: Long? = null
+
+    constructor() : this("", "", TipoChave.TIPO_CHAVE_UNSPECIFIED, TipoConta.TIPO_CONTA_UNSPECIFIED)
 }
