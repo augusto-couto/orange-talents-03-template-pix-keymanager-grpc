@@ -6,7 +6,10 @@ import br.com.zupacademy.augusto.client.Owner
 import br.com.zupacademy.augusto.instituicao.InstituicaoContaResponse
 import br.com.zupacademy.augusto.pix.Pix
 import br.com.zupacademy.augusto.pix.TipoConta
+import br.com.zupacademy.augusto.client.PixKeyDetailsResponse
+import br.com.zupacademy.augusto.pix.consulta.ConsultaPixDetails
 import br.com.zupacademy.augusto.pix.registra.RegistraPixRequest
+import java.util.*
 
 data class ClienteAccountResponse(
     val tipo: TipoConta,
@@ -30,6 +33,25 @@ data class ClienteAccountResponse(
                 name = titular.nome,
                 taxIdNumber = titular.cpf
             )
+        )
+    }
+
+    fun toPixDetails(pixRequest: Pix): ConsultaPixDetails {
+        return ConsultaPixDetails(
+            pixRequest.tipoChave.name,
+            pixRequest.chave,
+            bankAccount = BankAccount(
+                participant = instituicao.ispb,
+                branch = this.agencia,
+                accountNumber = this.numero,
+                accountType = this.tipo.toAccountType().toString()
+            ),
+            Owner(
+                type = "NATURAL_PERSON",
+                name = titular.nome,
+                taxIdNumber = titular.cpf
+            ),
+            pixRequest.createdAt
         )
     }
 }

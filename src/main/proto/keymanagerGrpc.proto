@@ -7,12 +7,52 @@ option objc_class_prefix = "HLW";
 
 package br.com.zupacademy.augusto;
 
+import "google/protobuf/timestamp.proto";
+
 service KeymanagerCadastraGrpcService {
   rpc cadastra (NewPixRequest) returns (NewPixResponse) {}
 }
 
 service KeymanagerDeletaGrpcService {
   rpc deleta (DeletePixRequest) returns (DeletePixResponse) {}
+}
+
+service KeyManagerConsultaGrpcService {
+  rpc consulta (ConsultaPixRequest) returns (ConsultaPixResponse) {}
+}
+
+message ConsultaPixRequest {
+  message TipoBuscaPixId {
+    string clienteId = 1;
+    int64 pixId = 2;
+  }
+
+  oneof tipo {
+    TipoBuscaPixId tipoBusca = 1;
+    string chave = 2;
+  }
+}
+
+message ConsultaPixResponse {
+  string clienteId = 1;
+  string pixId = 2;
+  ChavePix chavePix = 3;
+}
+
+message Conta {
+  TipoConta tipoConta = 1;
+  string instituicao = 2;
+  string nomeTitular = 3;
+  string cpfTitular = 4;
+  string agencia = 5;
+  string numeroConta = 6;
+}
+
+message ChavePix {
+  TipoChave tipoChave = 1;
+  string chave = 2;
+  Conta conta = 3;
+  google.protobuf.Timestamp criadaEm = 4;
 }
 
 message DeletePixRequest {

@@ -5,6 +5,8 @@ import br.com.zupacademy.augusto.NewPixRequest
 import br.com.zupacademy.augusto.pix.registra.RegistraPixRequest
 import br.com.zupacademy.augusto.pix.TipoChave
 import br.com.zupacademy.augusto.pix.TipoConta
+import br.com.zupacademy.augusto.pix.consulta.ConsultaPorChave
+import br.com.zupacademy.augusto.pix.consulta.ConsultaPorId
 import br.com.zupacademy.augusto.pix.deleta.DeletaPixRequest
 import java.util.*
 
@@ -27,5 +29,16 @@ fun DeletePixRequest.toDeleteRequest(): DeletaPixRequest {
     return DeletaPixRequest(
         idPix,
         UUID.fromString(idCliente)
+    )
+}
+
+fun porChave(chave: String): ConsultaPorChave {
+    return ConsultaPorChave(chave)
+}
+
+fun porId(pixId: Long, clienteId: String): ConsultaPorId {
+    return ConsultaPorId(
+        pixId,
+        UUID.fromString(clienteId)
     )
 }

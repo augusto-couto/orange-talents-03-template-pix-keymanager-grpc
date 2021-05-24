@@ -1,5 +1,6 @@
 package br.com.zupacademy.augusto.pix
 
+import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -28,6 +29,8 @@ class Pix(
     @Id
     @GeneratedValue
     val id: Long? = null
+
+    val createdAt = LocalDateTime.now()
 
     constructor() : this("", "", TipoChave.TIPO_CHAVE_UNSPECIFIED, TipoConta.TIPO_CONTA_UNSPECIFIED)
 
