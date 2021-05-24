@@ -1,7 +1,6 @@
 package br.com.zupacademy.augusto.pix.registra
 
 import br.com.zupacademy.augusto.client.ClienteClient
-import br.com.zupacademy.augusto.client.CreatePixKeyRequest
 import br.com.zupacademy.augusto.client.SistemaPixBCBClient
 import br.com.zupacademy.augusto.pix.Pix
 import br.com.zupacademy.augusto.pix.PixAlreadyExistsException
@@ -60,7 +59,7 @@ class RegistraPixService(
 
         val bcbResponse = bcbClient.cadastra(clienteResponse.toCreatePyxKeyRequest(requestRegistra))
         if (bcbResponse.status != HttpStatus.CREATED)
-            throw java.lang.IllegalStateException("Erro ao registrar chave pix no BCB (Banco Central do Brasil).")
+            throw IllegalStateException("Erro ao registrar chave pix no BCB (Banco Central do Brasil).")
 
         chavePix.atualiza(bcbResponse.body()!!.key)
 

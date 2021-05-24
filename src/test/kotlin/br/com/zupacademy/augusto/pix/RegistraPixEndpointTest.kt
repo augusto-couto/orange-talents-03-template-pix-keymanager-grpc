@@ -4,11 +4,12 @@ import br.com.zupacademy.augusto.KeymanagerCadastraGrpcServiceGrpc
 import br.com.zupacademy.augusto.NewPixRequest
 import br.com.zupacademy.augusto.TipoChave
 import br.com.zupacademy.augusto.TipoConta
-import br.com.zupacademy.augusto.client.ClienteClient
+import br.com.zupacademy.augusto.client.*
 import br.com.zupacademy.augusto.cliente.ClienteAccountResponse
 import br.com.zupacademy.augusto.cliente.ClienteTitularResponse
 import br.com.zupacademy.augusto.instituicao.InstituicaoContaResponse
 import br.com.zupacademy.augusto.pix.TipoConta.CONTA_CORRENTE
+import br.com.zupacademy.augusto.pix.registra.RegistraPixRequest
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,6 +39,9 @@ internal class RegistraPixEndpointTest(
     @Inject
     lateinit var clienteClient: ClienteClient
 
+    @Inject
+    lateinit var bcbClient: SistemaPixBCBClient
+
     @BeforeEach
     internal fun setup() {
         pixRepository.deleteAll()
@@ -47,13 +52,22 @@ internal class RegistraPixEndpointTest(
         return Mockito.mock(ClienteClient::class.java)
     }
 
+    @MockBean(SistemaPixBCBClient::class)
+    fun bcbClient(): SistemaPixBCBClient? {
+        return Mockito.mock(SistemaPixBCBClient::class.java)
+    }
+
     @Test
     fun `deve adicionar uma nova chave do tipo cpf`() {
-            `when`(clienteClient.consulta(
-                    "c56dfef4-7901-44fb-84e2-a2cefb157890",
-                    "CONTA_CORRENTE"
-                )
-            ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
+        ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
+
+        `when`(bcbClient.cadastra(clienteAccountResponse().toCreatePyxKeyRequest(registraPixRequest()))
+        ).thenReturn(HttpResponse.created(createPixKeyResponse()))
 
         val response = pixManager.cadastra(
             NewPixRequest.newBuilder()
@@ -72,10 +86,11 @@ internal class RegistraPixEndpointTest(
 
     @Test
     fun `nao deve adicionar uma nova chave quando ja nao encontrar o cliente`() {
-        `when`(clienteClient.consulta(
-            "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
-            "CONTA_POUPANCA"
-        )
+        `when`(
+            clienteClient.consulta(
+                "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
+                "CONTA_POUPANCA"
+            )
         ).thenReturn(HttpResponse.notFound())
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -95,21 +110,54 @@ internal class RegistraPixEndpointTest(
         }
     }
 
-        @Test
-    fun `nao deve adicionar uma nova chave quando ja existente`() {
-
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+    @Test
+    fun `nao deve adicionar uma nova chave quando ocorrer um erro no servico bcb`() {
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
-        pixRepository.save(Pix(
-            "40764442058",
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            br.com.zupacademy.augusto.pix.TipoChave.CPF,
-            CONTA_CORRENTE
-        ))
+        `when`(bcbClient.cadastra(clienteAccountResponse().toCreatePyxKeyRequest(registraPixRequest()))
+        ).thenReturn(HttpResponse.badRequest())
+
+        val exception = assertThrows<StatusRuntimeException> {
+            pixManager.cadastra(
+                NewPixRequest.newBuilder()
+                    .setIdCliente("c56dfef4-7901-44fb-84e2-a2cefb157890")
+                    .setTipoChave(TipoChave.CPF)
+                    .setValorChave("40764442058")
+                    .setTipoConta(TipoConta.CONTA_CORRENTE)
+                    .build()
+            )
+        }
+
+
+        with(exception) {
+            assertEquals(Status.FAILED_PRECONDITION.code, status.code)
+            assertEquals("Erro ao registrar chave pix no BCB (Banco Central do Brasil).", status.description)
+        }
+    }
+
+    @Test
+    fun `nao deve adicionar uma nova chave quando ja existente`() {
+
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
+        ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
+
+        pixRepository.save(
+            Pix(
+                "40764442058",
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                br.com.zupacademy.augusto.pix.TipoChave.CPF,
+                CONTA_CORRENTE
+            )
+        )
 
         val exception = assertThrows<StatusRuntimeException> {
             pixManager.cadastra(
@@ -130,10 +178,11 @@ internal class RegistraPixEndpointTest(
 
     @Test
     fun `nao deve adicionar uma nova chave quando formato cpf ivalido`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -149,17 +198,20 @@ internal class RegistraPixEndpointTest(
 
         with(exception) {
             assertEquals(Status.INVALID_ARGUMENT.code, status.code)
-            assertEquals("Formato de cpf inválido.\n" +
-                    " Formato esperado 99999999999", status.description)
+            assertEquals(
+                "Formato de cpf inválido.\n" +
+                        " Formato esperado 99999999999", status.description
+            )
         }
     }
 
     @Test
     fun `nao deve adicionar uma nova quando tipo chave nulo`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -180,10 +232,11 @@ internal class RegistraPixEndpointTest(
 
     @Test
     fun `nao deve adicionar uma nova quando tipo conta nulo`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -204,10 +257,11 @@ internal class RegistraPixEndpointTest(
 
     @Test
     fun `nao deve adicionar uma nova chave quando formato phone ivalido`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -223,17 +277,20 @@ internal class RegistraPixEndpointTest(
 
         with(exception) {
             assertEquals(Status.INVALID_ARGUMENT.code, status.code)
-            assertEquals("Formato de numero inválido.\n" +
-                    " Formato esperado +5585988714077", status.description)
+            assertEquals(
+                "Formato de numero inválido.\n" +
+                        " Formato esperado +5585988714077", status.description
+            )
         }
     }
 
     @Test
     fun `nao deve adicionar uma nova chave quando formato email ivalido`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -255,10 +312,11 @@ internal class RegistraPixEndpointTest(
 
     @Test
     fun `nao deve adicionar uma nova chave quando formato random nao vazio`() {
-        `when`(clienteClient.consulta(
-            "c56dfef4-7901-44fb-84e2-a2cefb157890",
-            "CONTA_CORRENTE"
-        )
+        `when`(
+            clienteClient.consulta(
+                "c56dfef4-7901-44fb-84e2-a2cefb157890",
+                "CONTA_CORRENTE"
+            )
         ).thenReturn(HttpResponse.ok(clienteAccountResponse()))
 
         val exception = assertThrows<StatusRuntimeException> {
@@ -300,6 +358,25 @@ internal class RegistraPixEndpointTest(
                 "Rafael M C Ponte",
                 "02467781054"
             )
+        )
+    }
+
+    private fun createPixKeyResponse(): CreatePixKeyResponse {
+        return CreatePixKeyResponse(
+            TipoChave.CPF.name,
+            "40764442058",
+            BankAccount(Participant.ITAU_UNIBANCO_SA.ispb, "0001", "291900", "CACC"),
+            Owner("NATURAL_PERSON", "Rafael M C Ponte", "02467781054"),
+            LocalDateTime.now().toString()
+        )
+    }
+
+    private fun registraPixRequest(): RegistraPixRequest {
+        return RegistraPixRequest(
+            "40764442058",
+            UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            br.com.zupacademy.augusto.pix.TipoChave.CPF,
+            CONTA_CORRENTE
         )
     }
 }
