@@ -1,10 +1,13 @@
 package br.com.zupacademy.augusto.pix.registra
 
 import br.com.zupacademy.augusto.client.ClienteClient
+import br.com.zupacademy.augusto.client.CreatePixKeyRequest
+import br.com.zupacademy.augusto.client.SistemaPixBCBClient
 import br.com.zupacademy.augusto.pix.Pix
 import br.com.zupacademy.augusto.pix.PixAlreadyExistsException
 import br.com.zupacademy.augusto.pix.PixRepository
 import br.com.zupacademy.augusto.pix.TipoChave
+import io.micronaut.http.HttpStatus
 import io.micronaut.transaction.SynchronousTransactionManager
 import io.micronaut.validation.Validated
 import java.sql.Connection
@@ -17,7 +20,8 @@ import javax.validation.Valid
 class RegistraPixService(
     @Inject val clienteClient: ClienteClient,
     @Inject val pixRepository: PixRepository,
-    @Inject val transactionManager: SynchronousTransactionManager<Connection>
+    @Inject val transactionManager: SynchronousTransactionManager<Connection>,
+    @Inject val bcbClient: SistemaPixBCBClient
 ) {
 
     fun registra(@Valid requestRegistra: RegistraPixRequest): Pix {
@@ -53,6 +57,12 @@ class RegistraPixService(
                 throw IllegalArgumentException("Formato de pix inválido")
             }
         }
+
+        val bcbResponse = bcbClient.cadastra(clienteResponse.toCreatePyxKeyRequest(requestRegistra))
+        if (bcbResponse.status != HttpStatus.CREATED)
+            throw java.lang.IllegalStateException("Erro ao registrar chave pix no BCB (Banco Central do Brasil).")
+
+        chavePix.atualiza(bcbResponse.body()!!.key)
 
         transactionManager.executeWrite {
             pixRepository.save(chavePix)

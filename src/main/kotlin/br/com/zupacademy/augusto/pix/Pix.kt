@@ -14,7 +14,7 @@ class Pix(
     @field:NotBlank
     @field:Size(max = 77)
     @Column(unique = true, nullable = false)
-    val chave: String,
+    var chave: String,
     @field:NotBlank
     @Column(nullable = false)
     val clienteId: String,
@@ -30,4 +30,12 @@ class Pix(
     val id: Long? = null
 
     constructor() : this("", "", TipoChave.TIPO_CHAVE_UNSPECIFIED, TipoConta.TIPO_CONTA_UNSPECIFIED)
+
+    fun atualiza(chave: String) {
+        this.chave = chave
+    }
+
+    companion object {
+       public val ITAU_ISPB: String = "60701190"
+    }
 }

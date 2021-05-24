@@ -23,12 +23,6 @@ class RegistraPixRequest(
 
     fun toModel(cliente: ClienteAccountResponse): Pix {
 
-        val valorChave: String = if (tipoChave == TipoChave.RANDOM) {
-            UUID.randomUUID().toString()
-        } else {
-            this.valorChave
-        }
-
         return Pix(
             valorChave,
             cliente.titular.id.toString(),
