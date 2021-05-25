@@ -21,6 +21,26 @@ service KeyManagerConsultaGrpcService {
   rpc consulta (ConsultaPixRequest) returns (ConsultaPixResponse) {}
 }
 
+service KeyManagerListaChavesGrpcService {
+  rpc lista (ListaPixRequest) returns (ListaPixResponse) {}
+}
+
+message ListaPixRequest {
+  string clienteId = 1;
+}
+
+message ListaPixResponse {
+  message Chave {
+    string pixId = 1;
+    TipoChave tipoChave = 2;
+    string chave = 3;
+    TipoConta tipoConta = 4;
+    google.protobuf.Timestamp criadoEm = 5;
+  }
+  string clienteId = 1;
+  repeated ListaPixResponse.Chave chaves = 2;
+}
+
 message ConsultaPixRequest {
   message TipoBuscaPixId {
     string clienteId = 1;
