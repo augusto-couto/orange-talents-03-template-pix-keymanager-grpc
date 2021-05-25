@@ -9,6 +9,7 @@ import br.com.zupacademy.augusto.client.SistemaPixBCBClient
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
@@ -16,14 +17,14 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
 internal class DeletaPixEndpointTest(
@@ -125,7 +126,7 @@ internal class DeletaPixEndpointTest(
 
     @Factory
     class Clients {
-        @Singleton
+        @Bean
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerDeletaGrpcServiceGrpc.KeymanagerDeletaGrpcServiceBlockingStub {
             return KeymanagerDeletaGrpcServiceGrpc.newBlockingStub(channel)
         }

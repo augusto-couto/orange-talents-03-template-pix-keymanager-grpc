@@ -337,7 +337,7 @@ internal class RegistraPixEndpointTest(
     }
 
     @Factory
-    class Clients {
+    class Clients1 {
         @Singleton
         fun blockingStub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): KeymanagerCadastraGrpcServiceGrpc.KeymanagerCadastraGrpcServiceBlockingStub {
             return KeymanagerCadastraGrpcServiceGrpc.newBlockingStub(channel)
