@@ -56,8 +56,4 @@ class Pix(
             })
             .build()
     }
-
-    companion object {
-       public val ITAU_ISPB: String = "60701190"
-    }
 }

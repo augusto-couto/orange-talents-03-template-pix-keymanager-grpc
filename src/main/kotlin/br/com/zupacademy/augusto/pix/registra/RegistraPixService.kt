@@ -35,10 +35,6 @@ class RegistraPixService(
             throw PixAlreadyExistsException("Chave pix já cadastrada.")
         }
 
-        if (requestRegistra.valorChave.length > 77) {
-            throw IllegalArgumentException("Chave não deve ter tamanho superior a 77.")
-        }
-
         when (requestRegistra.tipoChave) {
             TipoChave.CPF -> if (!requestRegistra.valorChave.matches(Regex("^[0-9]{11}\$"))) {
                 throw IllegalArgumentException("Formato de cpf inválido.\n Formato esperado 99999999999")
@@ -51,9 +47,6 @@ class RegistraPixService(
             }
             TipoChave.RANDOM -> if (requestRegistra.valorChave.isNotEmpty()) {
                 throw IllegalArgumentException("Chave deve estar vazio para gerar automaticamente")
-            }
-            else -> if (requestRegistra.valorChave.isBlank()) {
-                throw IllegalArgumentException("Formato de pix inválido")
             }
         }
 

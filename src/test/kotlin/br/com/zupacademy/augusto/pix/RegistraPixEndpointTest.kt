@@ -89,7 +89,7 @@ internal class RegistraPixEndpointTest(
         `when`(
             clienteClient.consulta(
                 "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
-                "CONTA_POUPANCA"
+                br.com.zupacademy.augusto.pix.TipoConta.CONTA_POUPANCA.name
             )
         ).thenReturn(HttpResponse.notFound())
 
